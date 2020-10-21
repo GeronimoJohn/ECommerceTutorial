@@ -1,3 +1,10 @@
+const client = contentful.createClient({
+    // This is the space ID. A space is like a project folder in Contentful terms
+    space: "77f867d92inh",
+    // This is the access token for this space. Normally you get both ID and the token in the Contentful web app
+    accessToken: "U1OoGC9ehi8YNPXK6kjiJ2dXV8G_WRk7CpNUc5__8EQ"
+});
+
 // Variables
 const cartBtn = document.querySelector('.cart-btn');
 const closeCartBtn = document.querySelector('.close-cart');
@@ -14,15 +21,22 @@ let cart = [];
 // Buttons
 let buttonsDOM = [];
 
-// class for getting the products
+// class for getting the products from the json file
 class Products{
+    // Method to get the files from the json file
     async getProducts(){
         try {
+            let contentful = await client.getEntries({
+                content_type: 'comfyHouseProductExample'
+            });
+            
+
             let result = await fetch('products.json');
             // the .json allows you to return data in json format
             let data = await result.json();
 
-            let products = data.items; 
+            // let products = contentful.items; 
+            let products = data.items;
             products = products.map(item => {
                 const {title, price} = item.fields;
                 const {id} = item.sys;
@@ -67,6 +81,7 @@ class UI {
         buttons.forEach(button => {
             let id = button.dataset.id;
             let inCart = cart.find(item => item.id === id);
+            // This stops you from re-entering a product into the cart
             if(inCart){
                 button.innerText = "In Cart";
                 button.disabled = true;
@@ -78,10 +93,10 @@ class UI {
                 // get product from products
                 let cartItem = {...Storage.getProduct(id), amount: 1};
 
-                // add product to the cart
+                // add product to the cart (cart array)
                 cart = [...cart, cartItem];
 
-                // save cart in local storage
+                // save cart in local storage so that when the pages refreshes it stays in the cart
                 Storage.saveCart(cart);
 
                 // set cart values
@@ -219,6 +234,7 @@ class Storage {
 document.addEventListener("DOMContentLoaded", () => {
     const ui = new UI();
     const products = new Products();
+
     // setup app
     ui.setupAPP()
 
